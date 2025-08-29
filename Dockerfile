@@ -26,7 +26,7 @@ RUN --mount=type=cache,target=/tmp/uv_cache \
 COPY --chown=appuser:appgroup ./src/mcp_outline /app/mcp_outline
 
 # Stage 2: Final runtime image
-FROM python:3.12-slim-bookworm
+FROM python:3.13-slim-bookworm
 
 # Create non-root user and group
 ARG APP_UID=1000
