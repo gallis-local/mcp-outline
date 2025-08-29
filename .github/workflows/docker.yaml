@@ -27,7 +27,7 @@ jobs:
     - name: Setup HashiCorp Vault
       uses: hashicorp/vault-action@v3
       with:
-        url: https://openbao.e.gallis.cloud
+        url: ${{ secrets.VAULT_ADDR }}
         method: jwt
         role: github-actions-role
         path: github-actions
