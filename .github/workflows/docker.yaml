@@ -57,13 +57,27 @@ jobs:
       with:
         driver-opts: network=host      
 
+    - name: Read version from pyproject.toml
+      id: version
+      shell: bash
+      run: |
+        set -euo pipefail
+        VERSION=$(grep -E '^\s*version\s*=\s*".*"' pyproject.toml | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
+        if [ -z "$VERSION" ]; then
+          echo "Failed to extract version from pyproject.toml" >&2
+          exit 1
+        fi
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: ${{ env.HARBOR_NAME }}/${{ env.HARBOR_LIBRARY }}/mcp-outline:latest
+        tags: |
+          ${{ env.HARBOR_NAME }}/${{ env.HARBOR_LIBRARY }}/mcp-outline:${{ steps.version.outputs.version }}
+          ${{ env.HARBOR_NAME }}/${{ env.HARBOR_LIBRARY }}/mcp-outline:latest
 
     - uses: 8398a7/action-slack@v3
       name: Slack Notification

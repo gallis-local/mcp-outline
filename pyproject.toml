@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mcp-outline"
 description = "A Model Context Protocol (MCP) server for Outline (https://www.getoutline.com)"
-version = "0.2.2"
+version = "0.2.3"
 authors = [
     {name = "Atle H. Havsø", email = "atle@havso.net"},
     {name = "Evan Gallis", email = "evan@gallis.cloud"}
@@ -57,5 +57,6 @@ exclude = [
     "**/node_modules",
     "**/__pycache__",
     "**/.*",
-    "docs/"
+    "docs/",
+    "manifests/"
 ]
