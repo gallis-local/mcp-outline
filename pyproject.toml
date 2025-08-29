@@ -8,6 +8,7 @@ description = "A Model Context Protocol (MCP) server for Outline (https://www.ge
 version = "0.2.2"
 authors = [
     {name = "Atle H. Havsø", email = "atle@havso.net"},
+    {name = "Evan Gallis", email = "evan@gallis.cloud"}
 ]
 requires-python = ">=3.10"
 readme = "README.md"
@@ -21,8 +22,8 @@ dependencies = [
 mcp-outline = "mcp_outline.server:main"
 
 [project.urls]
-"Homepage" = "https://github.com/Vortiago/mcp-outline"
-"Bug Tracker" = "https://github.com/Vortiago/mcp-outline/issues"
+"Homepage" = "https://github.com/egallis31/mcp-outline"
+"Bug Tracker" = "https://github.com/egallis31/mcp-outline/issues"
 
 [project.optional-dependencies]
 dev = [
