@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mcp-outline
+  labels:
+    app.kubernetes.io/name: mcp-outline
+  annotations:
+    # Optionally specify the ingressClassName via annotation for older controllers; will be overridden by overlays
+    kubernetes.io/ingress.class: nginx
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: mcp-outline.localtest.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mcp-outline
+                port:
+                  number: 80

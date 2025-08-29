@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mcp-outline-dev
+
+resources:
+  - ../../base
+  - namespace.yaml
+
+images:
+  - name: mcp-outline
+    newName: mcp-outline
+    newTag: latest
+
+patches:
+  - target:
+      kind: Ingress
+      name: mcp-outline
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: mcp-outline.localtest.me
+      - op: replace
+        path: /spec/ingressClassName
+        value: nginx
+  - path: deployment-patch.yaml
