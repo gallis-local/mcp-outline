@@ -13,11 +13,11 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: gallis-gh-runner
     outputs:
       released: ${{ steps.release.outputs.released }}
       version: ${{ steps.release.outputs.version }}
