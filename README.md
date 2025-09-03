@@ -188,13 +188,28 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Automated versioning and releases
 
-On every push to the `main` branch, a workflow automatically bumps the version in `pyproject.toml` and creates a Git tag:
+This project uses semantic versioning with conventional commits for automatic version management and Docker image tagging.
 
-- Major: any commit with `BREAKING CHANGE` in the body or a conventional commit using a `!` (e.g., `feat!: ...`).
-- Minor: any commit starting with `feat:`.
-- Patch: commits starting with `fix:`, `perf:`, `refactor:`, `chore:`, `docs:`, `build:`, `test:`, `ci:`, or `style:`; and Dependabot PR merge messages (e.g., "Bump ..." or authored by Dependabot).
+### How it works
 
-If no qualifying commit is found since the last tag, the workflow makes no changes. Dependabot PRs that are auto-merged will normally trigger a patch bump.
+- **Conventional Commits**: All commits must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification
+- **Automatic Versioning**: On pushes to `main`, semantic-release analyzes commits and determines version bumps:
+  - **Major**: commits with `BREAKING CHANGE` in body or `!` suffix (e.g., `feat!: ...`)
+  - **Minor**: commits starting with `feat:`
+  - **Patch**: commits starting with `fix:`
+  - **No bump**: commits starting with `docs:`, `chore:`, `style:`, `test:`, etc.
+- **Docker Images**: Tagged with both `latest` and semantic version (e.g., `v1.2.3`)
+
+### Commit Message Examples
+
+```bash
+feat: add new document export feature          # Minor bump (0.3.0 → 0.4.0)
+fix: resolve authentication issue              # Patch bump (0.3.0 → 0.3.1)  
+feat!: remove deprecated API endpoints         # Major bump (0.3.0 → 1.0.0)
+docs: update README with new examples          # No version bump
+```
+
+See [docs/semantic-versioning.md](docs/semantic-versioning.md) for detailed information.
 
 ## Development
 
