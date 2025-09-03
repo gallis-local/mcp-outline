@@ -3,9 +3,10 @@ Outline MCP Server
 
 A simple MCP server that provides document outline capabilities.
 """
-import os
 import logging
+import os
 from typing import Literal, cast
+
 from mcp.server.fastmcp import FastMCP
 
 from mcp_outline.features import register_all

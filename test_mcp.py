@@ -4,8 +4,10 @@ Test script to verify MCP server functionality
 """
 import asyncio
 import os
+
 from mcp.client.session import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
+
 
 async def test_mcp_server():
     """Test the MCP server by connecting and listing tools."""

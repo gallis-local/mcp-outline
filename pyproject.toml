@@ -3,7 +3,6 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-[project]
 name = "mcp-outline"
 description = "A Model Context Protocol (MCP) server for Outline (https://www.getoutline.com)"
 version = "0.3.0"
