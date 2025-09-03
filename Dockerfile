@@ -1,5 +1,5 @@
 # Stage 1: Dependency installation using uv
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS uv
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS uv
 
 # Create non-root user and group
 ARG APP_UID=1000
