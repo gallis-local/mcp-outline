@@ -186,6 +186,16 @@ Move document "docId123" to collection "colId789"
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Automated versioning and releases
+
+On every push to the `main` branch, a workflow automatically bumps the version in `pyproject.toml` and creates a Git tag:
+
+- Major: any commit with `BREAKING CHANGE` in the body or a conventional commit using a `!` (e.g., `feat!: ...`).
+- Minor: any commit starting with `feat:`.
+- Patch: commits starting with `fix:`, `perf:`, `refactor:`, `chore:`, `docs:`, `build:`, `test:`, `ci:`, or `style:`; and Dependabot PR merge messages (e.g., "Bump ..." or authored by Dependabot).
+
+If no qualifying commit is found since the last tag, the workflow makes no changes. Dependabot PRs that are auto-merged will normally trigger a patch bump.
+
 ## Development
 
 ```bash

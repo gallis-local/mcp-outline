@@ -1,0 +1,61 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Bump level (ignored if version provided)
+        type: choice
+        options: [patch, minor, major]
+        required: false
+      version:
+        description: Explicit version (e.g., 1.2.3)
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Run version bump
+        id: bump
+        run: |
+          set -euo pipefail
+          ARGS=""
+          if [ -n "${{ inputs.version }}" ]; then ARGS="--version ${{ inputs.version }}"; fi
+          if [ -z "${{ inputs.version }}" ] && [ -n "${{ inputs.bump }}" ]; then ARGS="--bump ${{ inputs.bump }}"; fi
+          python scripts/semver_bump.py $ARGS > .new_version || echo "exit_code=$?" >> $GITHUB_OUTPUT
+          echo "version=$(cat .new_version)" >> $GITHUB_OUTPUT
+
+      - name: Commit version
+        if: steps.bump.outputs.exit_code != '10'
+        run: |
+          git add pyproject.toml
+          git commit -m "chore(release): v${{ steps.bump.outputs.version }} [skip ci]"
+
+      - name: Create tag
+        if: steps.bump.outputs.exit_code != '10'
+        run: |
+          git tag -a "v${{ steps.bump.outputs.version }}" -m "Release v${{ steps.bump.outputs.version }}"
+
+      - name: Push
+        if: steps.bump.outputs.exit_code != '10'
+        run: |
+          git push origin HEAD:main --follow-tags

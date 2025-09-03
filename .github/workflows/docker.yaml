@@ -2,12 +2,8 @@ name: Docker Image CI - Sync
 
 on:
   push:
-    branches: [ main, master ]
-    paths:
-      - src/**
-      - Dockerfile
-      - pyproject.toml
-      - uv.lock
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
@@ -23,6 +19,9 @@ jobs:
     steps:
     - uses: actions/checkout@v5
       name: Checkout Repo Code
+      with:
+        fetch-depth: 0
+        ref: ${{ github.ref }}
 
     - name: Setup HashiCorp Vault
       uses: hashicorp/vault-action@v3
@@ -38,11 +37,22 @@ jobs:
           prod-kubernetes/data/harbor/arm github-actions-robot-password | HARBOR_PASSWORD ;
           prod-kubernetes/data/github/slack-webhooks slack-repo-channel | SLACK_WEBHOOK_URL ;
 
+    - name: Export Vault vars as outputs
+      id: vault
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "HARBOR_NAME=$HARBOR_NAME" >> "$GITHUB_OUTPUT"
+        echo "HARBOR_LIBRARY=$HARBOR_LIBRARY" >> "$GITHUB_OUTPUT"
+        echo "HARBOR_USERNAME=$HARBOR_USERNAME" >> "$GITHUB_OUTPUT"
+        echo "HARBOR_PASSWORD=$HARBOR_PASSWORD" >> "$GITHUB_OUTPUT"
+        echo "SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL" >> "$GITHUB_OUTPUT"
+
     - uses: docker/login-action@v3.5.0
       with:
-        registry: https://${{ env.HARBOR_NAME }}
-        username: ${{ env.HARBOR_USERNAME }}
-        password: ${{ env.HARBOR_PASSWORD }}
+        registry: https://${{ steps.vault.outputs.HARBOR_NAME }}
+        username: ${{ steps.vault.outputs.HARBOR_USERNAME }}
+        password: ${{ steps.vault.outputs.HARBOR_PASSWORD }}
 
     - name: Install QEMU
       run: |
@@ -76,8 +86,8 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          ${{ env.HARBOR_NAME }}/${{ env.HARBOR_LIBRARY }}/mcp-outline:${{ steps.version.outputs.version }}
-          ${{ env.HARBOR_NAME }}/${{ env.HARBOR_LIBRARY }}/mcp-outline:latest
+          ${{ steps.vault.outputs.HARBOR_NAME }}/${{ steps.vault.outputs.HARBOR_LIBRARY }}/mcp-outline:${{ steps.version.outputs.version }}
+          ${{ steps.vault.outputs.HARBOR_NAME }}/${{ steps.vault.outputs.HARBOR_LIBRARY }}/mcp-outline:latest
 
     - uses: 8398a7/action-slack@v3
       name: Slack Notification
@@ -85,5 +95,5 @@ jobs:
         status: ${{ job.status }}
         fields: repo,message,commit,author,action,eventName,ref,workflow,job,took # selectable (default: repo,message)
       env:
-        SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }} # required
-      if: always() # Pick up events even if the job fails or is canceled.
+        SLACK_WEBHOOK_URL: ${{ steps.vault.outputs.SLACK_WEBHOOK_URL }} # required
+      if: ${{ always() }} # Pick up events even if the job fails or is canceled.
