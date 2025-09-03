@@ -92,14 +92,14 @@ def read_current_version(pyproject_path: str) -> Tuple[str, int, int, int]:
 
     # Find [project] table block, then version within it
     project_start = None
-    for m in re.finditer(r"^\s*\[project\]\s*$", content, flags=re.MULTILINE):
+    for m in re.finditer(r"^\s*\[project\].*$", content, flags=re.MULTILINE):
         project_start = m.end()
         break
     if project_start is None:
         raise RuntimeError("[project] table not found in pyproject.toml")
 
     # Find the next table header or end of file to bound the project table
-    next_table = re.search(r"^\s*\[.*?\]\s*$", content[project_start:], flags=re.MULTILINE)
+    next_table = re.search(r"^\s*\[.+\].*$", content[project_start:], flags=re.MULTILINE)
     if next_table:
         project_block_end = project_start + next_table.start()
     else:
