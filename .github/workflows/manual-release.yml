@@ -41,21 +41,28 @@ jobs:
           ARGS=""
           if [ -n "${{ inputs.version }}" ]; then ARGS="--version ${{ inputs.version }}"; fi
           if [ -z "${{ inputs.version }}" ] && [ -n "${{ inputs.bump }}" ]; then ARGS="--bump ${{ inputs.bump }}"; fi
-          python scripts/semver_bump.py $ARGS > .new_version || echo "exit_code=$?" >> $GITHUB_OUTPUT
-          echo "version=$(cat .new_version)" >> $GITHUB_OUTPUT
+          if python scripts/semver_bump.py $ARGS > .new_version; then
+            EC=0
+          else
+            EC=$?
+          fi
+          VERSION=""
+          if [ -f .new_version ]; then VERSION=$(cat .new_version || true); fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "exit_code=$EC" >> $GITHUB_OUTPUT
 
       - name: Commit version
-        if: steps.bump.outputs.exit_code != '10'
+        if: steps.bump.outputs.exit_code == '0'
         run: |
           git add pyproject.toml
           git commit -m "chore(release): v${{ steps.bump.outputs.version }} [skip ci]"
 
       - name: Create tag
-        if: steps.bump.outputs.exit_code != '10'
+        if: steps.bump.outputs.exit_code == '0'
         run: |
           git tag -a "v${{ steps.bump.outputs.version }}" -m "Release v${{ steps.bump.outputs.version }}"
 
       - name: Push
-        if: steps.bump.outputs.exit_code != '10'
+        if: steps.bump.outputs.exit_code == '0'
         run: |
-          git push origin HEAD:main --follow-tags
+          git push --follow-tags

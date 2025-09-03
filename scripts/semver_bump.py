@@ -106,7 +106,12 @@ def read_current_version(pyproject_path: str) -> Tuple[str, int, int, int]:
         project_block_end = len(content)
     project_block = content[project_start:project_block_end]
 
-    version_match = re.search(r"^\s*version\s*=\s*\"(\d+)\.(\d+)\.(\d+)\"\s*$", project_block, flags=re.MULTILINE)
+    # Allow single or double quotes and optional trailing comments
+    version_match = re.search(
+        r"^\s*version\s*=\s*[\"'](\d+)\.(\d+)\.(\d+)[\"']",
+        project_block,
+        flags=re.MULTILINE,
+    )
     if not version_match:
         raise RuntimeError("version not found in [project] table")
     major, minor, patch = map(int, version_match.groups())
@@ -117,7 +122,12 @@ def write_new_version(pyproject_path: str, content: str, new_version: str) -> No
     # Replace only inside [project] table
     def repl(m: re.Match) -> str:
         block = m.group(0)
-        block = re.sub(r"^(\s*version\s*=\s*)\"\d+\.\d+\.\d+\"(\s*)$", rf"\1\"{new_version}\"\2", block, flags=re.MULTILINE)
+        block = re.sub(
+            r'^(\s*version\s*=\s*)[\"']\d+\.\d+\.\d+[\"'](.*)$',
+            rf'\1"{new_version}"\2',
+            block,
+            flags=re.MULTILINE,
+        )
         return block
 
     new_content, count = re.subn(
