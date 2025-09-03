@@ -188,13 +188,43 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Automated versioning and releases
 
-On every push to the `main` branch, a workflow automatically bumps the version in `pyproject.toml` and creates a Git tag:
+This project uses semantic versioning with conventional commits for automatic version management and Docker image tagging, supporting both stable releases and release candidates.
 
-- Major: any commit with `BREAKING CHANGE` in the body or a conventional commit using a `!` (e.g., `feat!: ...`).
-- Minor: any commit starting with `feat:`.
-- Patch: commits starting with `fix:`, `perf:`, `refactor:`, `chore:`, `docs:`, `build:`, `test:`, `ci:`, or `style:`; and Dependabot PR merge messages (e.g., "Bump ..." or authored by Dependabot).
+### How it works
 
-If no qualifying commit is found since the last tag, the workflow makes no changes. Dependabot PRs that are auto-merged will normally trigger a patch bump.
+- **Conventional Commits**: All commits must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification
+- **Dual Branch Strategy**: Automatic versioning works on both `main` (stable) and `rc` (release candidate) branches:
+  - **Main branch**: Creates stable releases (e.g., `v1.2.3`) and tags Docker images with `latest` + version
+  - **RC branch**: Creates pre-releases (e.g., `v1.2.3-rc.1`) and tags Docker images with `rc` + version
+- **Version Bump Rules**: Semantic-release analyzes commits and determines version bumps:
+  - **Major**: commits with `BREAKING CHANGE` in body or `!` suffix (e.g., `feat!: ...`)
+  - **Minor**: commits starting with `feat:`
+  - **Patch**: commits starting with `fix:`
+  - **No bump**: commits starting with `docs:`, `chore:`, `style:`, `test:`, etc.
+- **Automatic Updates**: The `pyproject.toml` version is automatically updated on releases
+
+### Commit Message Examples
+
+```bash
+# Stable releases (main branch)
+feat: add new document export feature          # Minor bump (0.3.0 → 0.4.0)
+fix: resolve authentication issue              # Patch bump (0.3.0 → 0.3.1)  
+feat!: remove deprecated API endpoints         # Major bump (0.3.0 → 1.0.0)
+docs: update README with new examples          # No version bump
+
+# Release candidates (rc branch)  
+feat: add experimental search filters          # Pre-release (0.3.0 → 0.4.0-rc.1)
+fix: improve rc stability                      # Pre-release (0.4.0-rc.1 → 0.4.0-rc.2)
+```
+
+### Docker Image Tags
+
+- **Main branch releases**: `harbor.example.com/library/mcp-outline:latest` + `harbor.example.com/library/mcp-outline:v1.2.3`
+- **RC branch releases**: `harbor.example.com/library/mcp-outline:rc` + `harbor.example.com/library/mcp-outline:v1.2.3-rc.1`
+
+This ensures RC versions never override the production `latest` tag while providing proper versioned releases for testing.
+
+See [docs/semantic-versioning.md](docs/semantic-versioning.md) for detailed information.
 
 ## Development
 

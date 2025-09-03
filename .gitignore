@@ -175,3 +175,7 @@ cython_debug/
 .aider*
 repomix-output.xml
 docs/external
+
+# Node.js dependencies
+node_modules/
+package-lock.json

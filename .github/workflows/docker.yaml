@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - rc
     paths:
       - Dockerfile
       - pyproject.toml
@@ -15,9 +16,47 @@ permissions:
   contents: read
 
 jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+    - uses: actions/checkout@v5
+      name: Checkout Repo Code
+      with:
+        fetch-depth: 0
+        ref: ${{ github.ref }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Release
+      id: release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        npx semantic-release > release-output.txt 2>&1 || true
+        cat release-output.txt
+        if grep -q "Published release" release-output.txt || [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "released=true" >> $GITHUB_OUTPUT
+          # Get the latest tag as version, fallback to current version from pyproject.toml for manual dispatch
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found version: $VERSION"
+        else
+          echo "released=false" >> $GITHUB_OUTPUT
+          echo "No release published"
+        fi
 
   build:
-
+    needs: release
+    if: needs.release.outputs.released == 'true'
     runs-on: gallis-gh-runner
 
     steps:
@@ -71,14 +110,27 @@ jobs:
       with:
         driver-opts: network=host      
 
+    - name: Determine Docker tags
+      id: tags
+      run: |
+        HARBOR_IMAGE="${{ steps.vault.outputs.HARBOR_NAME }}/${{ steps.vault.outputs.HARBOR_LIBRARY }}/mcp-outline"
+        VERSION_TAG="${HARBOR_IMAGE}:v${{ needs.release.outputs.version }}"
+        
+        if [[ "${{ github.ref_name }}" == "main" ]]; then
+          # Main branch: tag with both latest and version
+          echo "tags=${HARBOR_IMAGE}:latest,${VERSION_TAG}" >> $GITHUB_OUTPUT
+        else
+          # RC branch: tag with rc and version (no latest override)
+          echo "tags=${HARBOR_IMAGE}:rc,${VERSION_TAG}" >> $GITHUB_OUTPUT
+        fi
+
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: |
-          ${{ steps.vault.outputs.HARBOR_NAME }}/${{ steps.vault.outputs.HARBOR_LIBRARY }}/mcp-outline:latest
+        tags: ${{ steps.tags.outputs.tags }}
 
     - uses: 8398a7/action-slack@v3
       name: Slack Notification
