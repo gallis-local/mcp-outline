@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - rc
     paths:
       - Dockerfile
       - pyproject.toml
@@ -109,15 +110,27 @@ jobs:
       with:
         driver-opts: network=host      
 
+    - name: Determine Docker tags
+      id: tags
+      run: |
+        HARBOR_IMAGE="${{ steps.vault.outputs.HARBOR_NAME }}/${{ steps.vault.outputs.HARBOR_LIBRARY }}/mcp-outline"
+        VERSION_TAG="${HARBOR_IMAGE}:v${{ needs.release.outputs.version }}"
+        
+        if [[ "${{ github.ref_name }}" == "main" ]]; then
+          # Main branch: tag with both latest and version
+          echo "tags=${HARBOR_IMAGE}:latest,${VERSION_TAG}" >> $GITHUB_OUTPUT
+        else
+          # RC branch: tag with rc and version (no latest override)
+          echo "tags=${HARBOR_IMAGE}:rc,${VERSION_TAG}" >> $GITHUB_OUTPUT
+        fi
+
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: |
-          ${{ steps.vault.outputs.HARBOR_NAME }}/${{ steps.vault.outputs.HARBOR_LIBRARY }}/mcp-outline:latest
-          ${{ steps.vault.outputs.HARBOR_NAME }}/${{ steps.vault.outputs.HARBOR_LIBRARY }}/mcp-outline:v${{ needs.release.outputs.version }}
+        tags: ${{ steps.tags.outputs.tags }}
 
     - uses: 8398a7/action-slack@v3
       name: Slack Notification
