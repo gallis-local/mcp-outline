@@ -123,7 +123,7 @@ def write_new_version(pyproject_path: str, content: str, new_version: str) -> No
     def repl(m: re.Match) -> str:
         block = m.group(0)
         block = re.sub(
-            r'^(\s*version\s*=\s*)[\"']\d+\.\d+\.\d+[\"'](.*)$',
+            r"^(\s*version\s*=\s*)['\"]\d+\.\d+\.\d+['\"](.*)$",
             rf'\1"{new_version}"\2',
             block,
             flags=re.MULTILINE,
