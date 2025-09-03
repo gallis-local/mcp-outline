@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   bump-and-tag:
-    runs-on: ubuntu-latest
+    runs-on: gallis-gh-runner
     steps:
       - name: Checkout
         uses: actions/checkout@v4
