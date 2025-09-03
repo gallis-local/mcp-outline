@@ -2,8 +2,12 @@ name: Docker Image CI - Sync
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths:
+      - Dockerfile
+      - pyproject.toml
+      - src/**
   workflow_dispatch:
 
 permissions:
