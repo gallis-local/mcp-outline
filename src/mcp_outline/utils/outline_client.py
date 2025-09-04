@@ -314,43 +314,7 @@ class OutlineClient:
         response = self.post("collections.delete", {"id": collection_id})
         return response.get("success", False)
     
-    def export_collection(
-        self, 
-        collection_id: str, 
-        format: str = "outline-markdown"
-    ) -> Dict[str, Any]:
-        """
-        Export a collection to a file.
-        
-        Args:
-            collection_id: The ID of the collection to export
-            format: The export format (outline-markdown, json, or html)
-            
-        Returns:
-            FileOperation data that can be queried for progress
-        """
-        response = self.post("collections.export", {
-            "id": collection_id,
-            "format": format
-        })
-        return response.get("data", {})
-    
-    def export_all_collections(
-        self, 
-        format: str = "outline-markdown"
-    ) -> Dict[str, Any]:
-        """
-        Export all collections to a file.
-        
-        Args:
-            format: The export format (outline-markdown, json, or html)
-            
-        Returns:
-            FileOperation data that can be queried for progress
-        """
-        response = self.post("collections.export_all", {"format": format})
-        return response.get("data", {})
-    
+
     def answer_question(self, 
                        query: str,
                        collection_id: Optional[str] = None, 
@@ -449,40 +413,3 @@ class OutlineClient:
         """
         response = self.post("documents.viewed", {"limit": limit})
         return response.get("data", [])
-    
-    # Document import methods  
-    def import_document(
-        self, 
-        title: str,
-        text: str,
-        collection_id: Optional[str] = None,
-        parent_document_id: Optional[str] = None,
-        format: str = "markdown"
-    ) -> Dict[str, Any]:
-        """
-        Import a document from external content.
-        
-        Args:
-            title: The title for the imported document
-            text: The content to import
-            collection_id: Optional collection to import into
-            parent_document_id: Optional parent document ID
-            format: Import format (markdown, text, html)
-            
-        Returns:
-            The imported document data
-        """
-        data: Dict[str, Any] = {
-            "title": title,
-            "text": text,
-            "format": format
-        }
-        
-        if collection_id:
-            data["collectionId"] = collection_id
-            
-        if parent_document_id:
-            data["parentDocumentId"] = parent_document_id
-            
-        response = self.post("documents.import", data)
-        return response.get("data", {})

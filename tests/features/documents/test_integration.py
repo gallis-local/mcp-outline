@@ -121,18 +121,9 @@ class TestRevisionAndImportIntegration:
     
     @patch('mcp_outline.features.documents.document_import.get_outline_client')
     def test_import_workflow_integration(self, mock_get_client):
-        """Test complete document import workflow."""
+        """Test document listing and activity tracking workflow."""
         mock_client = MagicMock()
         mock_get_client.return_value = mock_client
-        
-        # Mock import result
-        import_result = {
-            "id": "imported_doc1",
-            "title": "Imported Document",
-            "createdAt": "2023-12-04T13:00:00Z",
-            "collection": {"id": "col1", "name": "Test Collection"}
-        }
-        mock_client.import_document.return_value = import_result
         
         # Mock draft and viewed documents
         mock_client.list_draft_documents.return_value = [
@@ -142,7 +133,7 @@ class TestRevisionAndImportIntegration:
             {"id": "viewed1", "title": "Recently Viewed Doc 1"}
         ]
         
-        # Test workflow: Check drafts -> Import document -> Check result
+        # Test workflow: Check drafts -> Check recently viewed documents
         
         # 1. List draft documents
         draft_tool = self.mock_mcp.tools['list_draft_documents']
@@ -151,33 +142,7 @@ class TestRevisionAndImportIntegration:
         assert "# Draft Documents (1 found)" in draft_result
         assert "Draft Document 1" in draft_result
         
-        # 2. Import document
-        import_tool = self.mock_mcp.tools['import_document']
-        import_result_str = import_tool(
-            title="Imported Document",
-            text="# Imported Content\n\nThis is imported content.",
-            collection_id="col1",
-            parent_document_id="",
-            format="markdown"
-        )
-        
-        assert "# Document Import Successful" in import_result_str
-        assert "Imported Document" in import_result_str
-        assert "imported_doc1" in import_result_str
-        assert "Test Collection" in import_result_str
-        
-        # 3. Import document from file content
-        file_import_tool = self.mock_mcp.tools['import_document_from_file_content']
-        file_import_result = file_import_tool(
-            title="File Import Test",
-            file_content="# Markdown File\n\nContent from file.",
-            file_extension="md",
-            collection_id="col1"
-        )
-        
-        assert "# Document Import Successful" in file_import_result
-        
-        # 4. Get recently viewed documents
+        # 2. Get recently viewed documents
         viewed_tool = self.mock_mcp.tools['get_recently_viewed_documents']
         viewed_result = viewed_tool(25)
         
@@ -211,33 +176,3 @@ class TestRevisionAndImportIntegration:
         
         # Should still only have been called once (cached second time)
         assert mock_client.get_document_revision.call_count == 1
-    
-    @patch('mcp_outline.features.documents.document_import.get_outline_client')
-    def test_import_validation_workflow(self, mock_get_client):
-        """Test import validation and error handling."""
-        import_tool = self.mock_mcp.tools['import_document']
-        
-        # Test invalid format
-        result1 = import_tool(
-            title="Test",
-            text="Content",
-            format="pdf"
-        )
-        assert "Error: Unsupported format 'pdf'" in result1
-        
-        # Test empty title
-        result2 = import_tool(
-            title="",
-            text="Content"
-        )
-        assert "Error: Document title is required" in result2
-        
-        # Test empty content
-        result3 = import_tool(
-            title="Test Title",
-            text=""
-        )
-        assert "Error: Document content is required" in result3
-        
-        # Verify no API calls were made for validation errors
-        mock_get_client.assert_not_called()

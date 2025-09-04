@@ -203,7 +203,7 @@ class TestRevisionPerformance:
 
 @pytest.mark.performance  
 class TestDocumentImportPerformance:
-    """Performance tests for document import tools."""
+    """Performance tests for document listing and activity tracking tools."""
     
     def setup_method(self):
         """Set up test fixtures."""
@@ -212,41 +212,6 @@ class TestDocumentImportPerformance:
         # Import and register tools
         from mcp_outline.features.documents import document_import
         document_import.register_tools(self.mock_mcp)
-    
-    @patch('mcp_outline.features.documents.document_import.get_outline_client')
-    def test_large_content_import_performance(self, mock_get_client):
-        """Test import performance with large content."""
-        large_content = "# Large Document\n\nThis is a very large document. " * 10000  # ~320KB
-        
-        mock_client = MagicMock()
-        mock_client.import_document.return_value = {
-            "id": "imported_large",
-            "title": "Large Import Test",
-            "createdAt": "2023-12-04T13:00:00Z"
-        }
-        mock_get_client.return_value = mock_client
-        
-        import_tool = self.mock_mcp.tools['import_document']
-        
-        # Measure performance
-        start_time = time.time()
-        result = import_tool(
-            title="Large Import Test",
-            text=large_content,
-            format="markdown"
-        )
-        end_time = time.time()
-        
-        processing_time = end_time - start_time
-        
-        # Verify results
-        assert "# Document Import Successful" in result
-        assert "Large Import Test" in result
-        
-        # Should handle large content efficiently
-        assert processing_time < 1.0, f"Importing large content took too long: {processing_time:.2f}s"
-        
-        print(f"Imported {len(large_content)} characters in {processing_time:.3f} seconds")
 
 
 if __name__ == "__main__":
