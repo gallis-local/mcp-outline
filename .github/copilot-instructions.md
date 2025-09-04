@@ -7,6 +7,7 @@ Use this as a quick-start guide to contribute productively with minimal context 
 - Transports: `MCP_TRANSPORT=stdio` (default) or `sse` (HTTP/SSE on port 3001).
 - Flow: `server.py` creates `FastMCP` → registers tools under `features/documents` → tools call Outline via `OutlineClient`.
 - Architecture: Modular feature system where each module in `features/documents/` handles a specific domain (search, revisions, collaboration, etc.).
+- **Commits**: ALWAYS USE conventional commits for semantic versioning. Examples: `feat: add new tool`, `fix: resolve client error`, `feat!: breaking change`.
 
 ## Key files
 - `src/mcp_outline/server.py`: Entry. Reads `MCP_TRANSPORT`, sets port=3001, `mcp.run(...)`.
@@ -34,7 +35,6 @@ Use this as a quick-start guide to contribute productively with minimal context 
 - Tests: `uv sync --extra dev; uv run pytest -q`. Use `MockMCP` class pattern in tests.
 - Smoke test: `uv run python test_mcp.py` (spawns stdio server and lists tools).
 - Format: `uv run ruff format .` (79-char line limit in pyproject.toml).
-- **Commits**: Use conventional commits for semantic versioning. Examples: `feat: add new tool`, `fix: resolve client error`, `feat!: breaking change`.
 
 ## Extending
 - **New tool in existing module**:
