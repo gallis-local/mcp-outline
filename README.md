@@ -10,13 +10,30 @@ This project implements a Model Context Protocol (MCP) server that allows AI ass
 
 Currently implemented:
 
-- **Document Search**: Search for documents by keywords
-- **Collection Management**: List collections and view document structure
-- **Document Reading**: Read document content, export as markdown
-- **Comment Management**: View and add comments on documents
+### Document Management
+- **Document Search**: Search for documents by keywords across content and titles
+- **Document Reading**: Read document content and export as markdown
 - **Document Creation**: Create new documents in collections
 - **Document Editing**: Update document content and move documents
-- **Backlink Management**: View documents that link to a specific document
+- **Document Import**: Import external content (markdown, text, HTML) as new documents
+
+### Document History & Versioning
+- **Revision Tracking**: List and retrieve specific document revisions
+- **Revision Comparison**: Compare document versions with detailed change analysis
+- **Revision Analytics**: Analyze revision history patterns and contributor activity
+- **Metadata Enrichment**: Enhanced revision information with statistics and timestamps
+
+### Collection Management
+- **Collection Operations**: List collections, view document structure, create/update/delete collections
+- **Collection Export**: Export collections in multiple formats (markdown, JSON, HTML)
+
+### User Activity & Drafts
+- **Draft Management**: List and manage draft documents
+- **Activity Tracking**: View recently viewed documents
+- **Collaboration Features**: View and add comments, manage document backlinks
+
+### AI Integration
+- **Natural Language Q&A**: Ask questions about document content with AI-powered responses
 
 ## Add to Cursor with Docker
 
@@ -144,6 +161,64 @@ When using `MCP_TRANSPORT=sse`, the server will start on port 3001 with the foll
 When running the MCP Inspector, go to Tools > Click on a tool > it appears on the right side so that you can query it.
 ![MCP Inspector](./docs/mcp_inspector_guide.png)
 
+## Available Tools
+
+### Document Search & Discovery
+- **`search_documents`**: Search for documents by keywords across content and titles
+- **`list_collections`**: List all available collections in the workspace
+- **`get_collection_structure`**: View hierarchical document structure within a collection
+- **`get_document_id_from_title`**: Find document ID by searching for its title
+
+### Document Content Management
+- **`read_document`**: Retrieve and display full document content
+- **`export_document`**: Export document content as plain markdown
+- **`create_document`**: Create new documents in specified collections
+- **`update_document`**: Modify existing document content
+- **`move_document`**: Move documents between collections
+
+### Document History & Versioning
+- **`get_document_revision`**: Retrieve specific document revision by ID (with caching)
+- **`get_document_revision_with_metadata`**: Get revision with enriched statistics
+- **`list_document_revisions`**: List all revisions for a document (supports pagination)
+- **`compare_document_revisions`**: Compare two revisions with detailed change analysis
+- **`get_revision_history_summary`**: Analyze revision patterns and contributor activity
+
+### Document Import & Activity
+- **`import_document`**: Import external content (markdown, text, HTML) as new documents
+- **`import_document_from_file_content`**: Auto-detect format and import from file content
+- **`list_draft_documents`**: List draft documents for the current user
+- **`get_recently_viewed_documents`**: Get recently viewed documents
+
+### Collection Management
+- **`create_collection`**: Create new collections for organizing documents
+- **`update_collection`**: Modify collection properties (name, description, color)
+- **`delete_collection`**: Remove collections and all contained documents
+- **`export_collection`**: Export entire collections to downloadable files
+- **`export_all_collections`**: Export all workspace content
+
+### Document Lifecycle
+- **`archive_document`**: Archive documents without deleting
+- **`unarchive_document`**: Restore archived documents
+- **`list_trash`**: View documents in trash
+- **`restore_document`**: Restore documents from trash
+- **`permanently_delete_document`**: Permanently remove documents
+
+### Collaboration Features
+- **`list_document_comments`**: View all comments on a document
+- **`get_comment`**: Retrieve specific comment details
+- **`add_comment`**: Add comments to documents
+- **`get_document_backlinks`**: Find documents that link to a specific document
+
+### AI-Powered Features
+- **`ask_ai_about_documents`**: Ask natural language questions about document content with AI-powered responses
+
+### Advanced Features
+- **Caching**: Frequently accessed revisions are cached for improved performance
+- **Pagination**: Large result sets support offset/limit pagination
+- **Format Validation**: Import tools validate file formats and content
+- **Error Handling**: Comprehensive error messages for troubleshooting
+- **Performance**: Optimized for large document repositories and revision histories
+
 ## Usage Examples
 
 ### Search for Documents
@@ -170,6 +245,40 @@ Get the content of document with ID "docId123"
 Create a new document titled "Research Report" in collection "colId456" with content "# Introduction\n\nThis is a research report..."
 ```
 
+### Document Revision Management
+
+```
+List all revisions for document "docId123"
+```
+
+```
+Compare revisions "rev001" and "rev002" and show me the differences
+```
+
+```
+Get a summary of revision history for document "docId123"
+```
+
+### Import External Content
+
+```
+Import this markdown content as a new document titled "Imported Guide" in collection "colId456"
+```
+
+```
+Import the content from file "README.md" as a new document
+```
+
+### Draft and Activity Management
+
+```
+Show me my draft documents
+```
+
+```
+List the documents I've recently viewed
+```
+
 ### Add a Comment
 
 ```
@@ -180,6 +289,12 @@ Add a comment to document "docId123" saying "This looks great, but we should add
 
 ```
 Move document "docId123" to collection "colId789"
+```
+
+### Collection Export
+
+```
+Export collection "colId456" as markdown format
 ```
 
 ## Contributing

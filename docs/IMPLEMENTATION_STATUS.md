@@ -4,15 +4,15 @@ This document provides a comprehensive comparison between the available Outline 
 
 ## Overview
 
-The MCP-Outline server currently implements **25 tools** covering the most essential document and collection management operations. Based on the Outline API specification, there are **54 total endpoints** available across all resource types.
+The MCP-Outline server currently implements **30 tools** covering essential document and collection management operations, including comprehensive document history and versioning capabilities. Based on the Outline API specification, there are **54 total endpoints** available across all resource types.
 
 ## Implementation Summary
 
-- **✅ Implemented**: 25/54 endpoints (46%)
-- **❌ Not Implemented**: 29/54 endpoints (54%)
+- **✅ Implemented**: 30/54 endpoints (56%)
+- **❌ Not Implemented**: 24/54 endpoints (44%)
 - **❌ Excluded from Scope**: User/Group Management, File Operations, Shares, Stars, Events, Attachments, OAuth (admin/integration features)
-- **🔴 High Priority Missing**: Document History/Revisions
-- **🟡 Medium Priority Missing**: Document Import, Comment Management
+- **✅ High Priority Completed**: Document History/Revisions, Document Import, Activity Tracking
+- **🟡 Medium Priority Missing**: Advanced Comment Management (update/delete)
 - **🟢 Low Priority Missing**: Document Templates
 
 ## Document Endpoints (Primary Focus)
@@ -30,9 +30,9 @@ The MCP-Outline server currently implements **25 tools** covering the most essen
 | `documents.restore` | ✅ | `restore_document` | Restore archived/deleted document | High |
 | `documents.delete` | ✅ | `delete_document` | Delete or permanently delete document | High |
 | `documents.answerQuestion` | ✅ | `ask_ai_about_documents` | AI-powered document Q&A | Medium |
-| `documents.drafts` | ❌ | - | List all draft documents | Medium |
-| `documents.viewed` | ❌ | - | List recently viewed documents | Medium |
-| `documents.import` | ❌ | - | Import file as document | Medium |
+| `documents.drafts` | ✅ | `list_draft_documents` | List all draft documents | Medium |
+| `documents.viewed` | ✅ | `get_recently_viewed_documents` | List recently viewed documents | Medium |
+| `documents.import` | ✅ | `import_document`, `import_document_from_file_content` | Import file as document | Medium |
 | `documents.templatize` | ❌ | - | Create template from document | Low |
 | `documents.unpublish` | ❌ | - | Unpublish a document | Low |
 | `documents.users` | ❌ | - | List users with access to document | ⛔ Excluded |
@@ -50,8 +50,8 @@ The MCP-Outline server currently implements **25 tools** covering the most essen
 | `collections.create` | ✅ | `create_collection` | Create a new collection | High |
 | `collections.update` | ✅ | `update_collection` | Update collection properties | High |
 | `collections.delete` | ✅ | `delete_collection` | Delete collection and documents | High |
-| `collections.export` | ❌ | - | Export collection as file | ⛔ Excluded |
-| `collections.export_all` | ❌ | - | Export all collections | ⛔ Excluded |
+| `collections.export` | ✅ | `export_collection` | Export collection as file | Medium |
+| `collections.export_all` | ✅ | `export_all_collections` | Export all collections | Medium |
 | `collections.add_user` | ❌ | - | Add user to collection | ⛔ Excluded |
 | `collections.remove_user` | ❌ | - | Remove user from collection | ⛔ Excluded |
 | `collections.memberships` | ❌ | - | List collection memberships | ⛔ Excluded |
@@ -69,20 +69,39 @@ The MCP-Outline server currently implements **25 tools** covering the most essen
 | `comments.update` | ❌ | - | Update comment | Medium |
 | `comments.delete` | ❌ | - | Delete comment | Medium |
 
+## Revision Endpoints
+
+| Endpoint | Status | MCP Tool Name | Description | Priority |
+|----------|--------|---------------|-------------|----------|
+| `revisions.info` | ✅ | `get_document_revision`, `get_document_revision_with_metadata` | Get specific revision | High |
+| `revisions.list` | ✅ | `list_document_revisions` | List document revisions | High |
+
 ## Missing High-Priority Features
 
-### 1. Document History & Versioning
-| Endpoint | Description | Use Case |
-|----------|-------------|----------|
-| `revisions.info` | Get specific revision | Version control |
-| `revisions.list` | List document revisions | History tracking |
+### ✅ COMPLETED: Document History & Versioning
+| Endpoint | Description | Status |
+|----------|-------------|--------|
+| `revisions.info` | Get specific revision | ✅ Implemented |
+| `revisions.list` | List document revisions | ✅ Implemented |
 
-### 2. Advanced Document Management
-| Endpoint | Description | Use Case |
-|----------|-------------|----------|
-| `documents.drafts` | List draft documents | Draft management |
-| `documents.viewed` | Recently viewed documents | User activity tracking |
-| `documents.import` | Import external files | Content migration |
+**Additional Features Implemented:**
+- Revision comparison with detailed change analysis (`compare_document_revisions`)
+- Revision history analytics (`get_revision_history_summary`)
+- Caching for improved performance
+- Pagination support for large revision lists
+- Metadata enrichment with statistics
+
+### ✅ COMPLETED: Advanced Document Management
+| Endpoint | Description | Status |
+|----------|-------------|--------|
+| `documents.drafts` | List draft documents | ✅ Implemented |
+| `documents.viewed` | Recently viewed documents | ✅ Implemented |
+| `documents.import` | Import external files | ✅ Implemented |
+
+**Additional Features Implemented:**
+- Auto-format detection for file imports
+- Support for markdown, text, and HTML imports
+- Input validation and error handling
 
 ### 3. Advanced Search and Discovery
 | Endpoint | Description | Use Case |
@@ -90,7 +109,7 @@ The MCP-Outline server currently implements **25 tools** covering the most essen
 | `documents.get_document_id_from_title` | Find document by title | ✅ Already implemented |
 | `get_document_backlinks` | Find linking documents | ✅ Already implemented |
 
-## Missing Medium-Priority Features
+## Remaining Medium-Priority Features
 
 ### 1. Comment Management
 | Endpoint | Description | Use Case |
@@ -98,7 +117,7 @@ The MCP-Outline server currently implements **25 tools** covering the most essen
 | `comments.update` | Update comment | Edit existing comments |
 | `comments.delete` | Delete comment | Remove comments |
 
-## Missing Low-Priority Features
+## Remaining Low-Priority Features
 
 ### 1. Document Templates
 | Endpoint | Description | Use Case |
@@ -110,13 +129,11 @@ The MCP-Outline server currently implements **25 tools** covering the most essen
 
 The following endpoints are **excluded from the implementation roadmap** as they focus on advanced features, integrations, or administrative functions rather than core document/collection functionality:
 
-### File Operations & Export/Import (Excluded)
+### File Operations & Advanced Export/Import (Excluded)
 | Endpoint | Description | Reason for Exclusion |
 |----------|-------------|---------------------|
 | `fileOperations.*` | File operation management | Complex file handling |
-| `documents.export` | Export document as markdown | File generation complexity |
-| `collections.export` | Export collection as file | File generation complexity |
-| `collections.export_all` | Export all collections | File generation complexity |
+| `documents.export` | Export document as markdown | ✅ Implemented as `export_document` |
 | `attachments.*` | File attachment handling | Rich content complexity |
 
 ### Sharing & Public Access (Excluded)
@@ -178,7 +195,23 @@ The following endpoints are **excluded from the implementation roadmap** as they
 - ✅ `get_document_id_from_title` - Find document by title
 - ✅ `get_document_backlinks` - Find documents linking to target
 - ✅ `list_trash` - View deleted documents
-- ✅ `list_archived_documents` - View archived documents
+
+### Document History & Versioning  
+- ✅ `get_document_revision` - Retrieve specific document revision (with caching)
+- ✅ `get_document_revision_with_metadata` - Get revision with enriched statistics
+- ✅ `list_document_revisions` - List all revisions with pagination support
+- ✅ `compare_document_revisions` - Compare revisions with detailed analysis
+- ✅ `get_revision_history_summary` - Analyze revision patterns and contributors
+
+### Document Import & Activity
+- ✅ `import_document` - Import external content (markdown, text, HTML)
+- ✅ `import_document_from_file_content` - Auto-detect format and import
+- ✅ `list_draft_documents` - List draft documents for current user
+- ✅ `get_recently_viewed_documents` - Get recently viewed documents
+
+### Collection Export
+- ✅ `export_collection` - Export collections to downloadable files
+- ✅ `export_all_collections` - Export entire workspace content
 
 ### Special Features
 - ✅ `ask_ai_about_documents` - AI-powered Q&A on document content
@@ -188,45 +221,43 @@ The following endpoints are **excluded from the implementation roadmap** as they
 The MCP-Outline implementation focuses exclusively on **essential document and collection management operations**:
 
 1. **Document CRUD Operations** - Create, read, update, delete documents
-2. **Collection Management** - Organize documents in collections
+2. **Collection Management** - Organize documents in collections with export capabilities
 3. **Document Lifecycle** - Archive, restore, move documents
-4. **Basic Collaboration** - Comments on documents
-5. **Search & Discovery** - Find and navigate documents
-6. **AI-Enhanced Features** - Intelligent document Q&A
+4. **Document History & Versioning** - Complete revision tracking, comparison, and analytics
+5. **Document Import & Activity** - Import external content, track drafts and user activity
+6. **Basic Collaboration** - Comments on documents
+7. **Search & Discovery** - Find and navigate documents
+8. **AI-Enhanced Features** - Intelligent document Q&A
 
 ## Recommendations for Next Implementation Phases
 
-### Phase 1: Document History & Versioning
-1. `revisions.info` - Retrieve specific document revision
-2. `revisions.list` - List all revisions for a document
-3. Document version control and history tracking
+### Phase 1: Enhanced Comment Management
+1. `comments.update` - Edit existing comments
+2. `comments.delete` - Remove comments
 
-### Phase 2: Enhanced Document Management
-1. `documents.drafts` - Essential for draft workflow management
-2. `documents.viewed` - Track recently viewed documents for user experience
-3. `documents.import` - Content migration and file import capability
-4. Comment management (`comments.update`, `comments.delete`)
-
-### Phase 3: Document Templates & Lifecycle
+### Phase 2: Document Templates & Advanced Lifecycle  
 1. `documents.templatize` - Create reusable document templates
 2. `documents.unpublish` - Enhanced document lifecycle management
 
 ## Current Architecture Strengths
 
 1. **Comprehensive Core Functionality**: All essential CRUD operations implemented
-2. **Smart Search Integration**: Both keyword and AI-powered search available
-3. **Robust Error Handling**: Consistent error handling across all tools
-4. **Modular Design**: Well-organized into logical feature modules
-5. **Real-world Usage Focus**: Prioritizes practical document management workflows
+2. **Complete Document History**: Full revision tracking, comparison, and analytics
+3. **Advanced Import Capabilities**: Multi-format document import with validation
+4. **Activity Tracking**: Draft management and user activity monitoring
+5. **Smart Search Integration**: Both keyword and AI-powered search available
+6. **Performance Optimizations**: Caching, pagination, and efficient large dataset handling
+7. **Robust Error Handling**: Consistent error handling across all tools
+8. **Modular Design**: Well-organized into logical feature modules
+9. **Real-world Usage Focus**: Prioritizes practical document management workflows
 
 ## Current Architecture Gaps
 
-1. **Document History**: No revision tracking or version control
-2. **Draft Management**: No dedicated draft document handling
-3. **Comment Management**: Cannot update or delete existing comments
-4. **Document Templates**: No template creation or management
+1. **Comment Management**: Cannot update or delete existing comments (low impact)
+2. **Document Templates**: No template creation or management (low priority)
+3. **Document Unpublishing**: Limited document lifecycle states (low priority)
 
 ---
 
-*Last updated: September 2025*
-*Based on Outline API v0.1.0 and MCP-Outline current implementation*
+*Last updated: January 2025*
+*Based on Outline API v0.1.0 and MCP-Outline v0.3.0 implementation*
