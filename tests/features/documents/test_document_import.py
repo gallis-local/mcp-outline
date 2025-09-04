@@ -3,8 +3,6 @@ Tests for document import and activity tracking tools.
 """
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from mcp_outline.features.documents.common import OutlineClientError
 from mcp_outline.features.documents.document_import import (
     _format_documents_list,

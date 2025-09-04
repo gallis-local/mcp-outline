@@ -3,10 +3,6 @@ Integration tests for document revision and import workflows.
 """
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from mcp_outline.features.documents.common import OutlineClientError
-
 
 # Mock FastMCP for registering tools
 class MockMCP:
@@ -61,7 +57,10 @@ class TestRevisionAndImportIntegration:
         self.mock_mcp = MockMCP()
         
         # Import and register tools from both modules
-        from mcp_outline.features.documents import document_revisions, document_import
+        from mcp_outline.features.documents import (
+            document_import,
+            document_revisions,
+        )
         document_revisions.register_tools(self.mock_mcp)
         document_import.register_tools(self.mock_mcp)
     

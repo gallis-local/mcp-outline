@@ -6,8 +6,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mcp_outline.features.documents.common import OutlineClientError
-
 
 # Mock FastMCP for registering tools
 class MockMCP:

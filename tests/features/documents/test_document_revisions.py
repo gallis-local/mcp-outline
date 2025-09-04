@@ -3,8 +3,6 @@ Tests for document revision tools.
 """
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from mcp_outline.features.documents.common import OutlineClientError
 from mcp_outline.features.documents.document_revisions import (
     _format_revision_info,

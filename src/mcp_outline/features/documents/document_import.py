@@ -1,7 +1,8 @@
 """
 Document import and activity tracking tools for the MCP Outline server.
 
-This module provides MCP tools for importing documents and tracking user activity.
+This module provides MCP tools for importing documents and tracking user
+activity.
 """
 from typing import Any, Dict, List
 
@@ -44,7 +45,9 @@ def _format_import_result(result: Dict[str, Any]) -> str:
     doc_id = result.get("id", "")
     created_at = result.get("createdAt", "")
     collection = result.get("collection", {})
-    collection_name = collection.get("name", "Unknown") if collection else "Unknown"
+    collection_name = (
+        collection.get("name", "Unknown") if collection else "Unknown"
+    )
     
     output = "# Document Import Successful\n\n"
     output += f"**Title:** {doc_title}\n"
@@ -63,7 +66,8 @@ def _validate_import_format(format_type: str) -> bool:
 
 
 def register_tools(mcp):
-    """Register document import and activity tracking tools with the MCP server."""
+    """Register document import and activity tracking tools with the MCP
+    server."""
     
     @mcp.tool()
     def list_draft_documents(limit: int = 25) -> str:

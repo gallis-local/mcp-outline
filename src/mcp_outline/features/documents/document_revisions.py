@@ -3,14 +3,13 @@ Document revision tools for the MCP Outline server.
 
 This module provides MCP tools for managing document revisions and version history.
 """
-from typing import Any, Dict, List
 import time
+from typing import Any, Dict, List
 
 from mcp_outline.features.documents.common import (
     OutlineClientError,
     get_outline_client,
 )
-
 
 # Simple in-memory cache for frequently accessed revisions
 _revision_cache = {}
@@ -55,7 +54,7 @@ def _format_revision_info(revision: Dict[str, Any]) -> str:
     created_by = revision.get("createdBy", {})
     author_name = created_by.get("name", "Unknown") if created_by else "Unknown"
     
-    output = f"# Document Revision\n\n"
+    output = "# Document Revision\n\n"
     output += f"**Revision ID:** {revision_id}\n"
     output += f"**Title:** {title}\n"
     output += f"**Created:** {created_at}\n"
@@ -402,7 +401,7 @@ def register_tools(mcp):
             if len(revisions) < 2:
                 return "Insufficient revision history for analysis (need at least 2 revisions)."
             
-            output = f"# Revision History Summary\n"
+            output = "# Revision History Summary\n"
             output += f"**Document ID:** {document_id}\n"
             output += f"**Analyzed Revisions:** {len(revisions)}\n\n"
             
