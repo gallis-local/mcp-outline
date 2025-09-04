@@ -135,7 +135,7 @@ class TestOutlineClient:
         mock_post.return_value = mock_response
         
         client = OutlineClient()
-        result = client.list_document_revisions("doc123", 10)
+        result = client.list_document_revisions("doc123", 10, 5)
         
         mock_post.assert_called_once_with(
             f"{MOCK_API_URL}/revisions.list",
@@ -144,7 +144,7 @@ class TestOutlineClient:
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
-            json={"documentId": "doc123", "limit": 10}
+            json={"documentId": "doc123", "limit": 10, "offset": 5}
         )
         
         assert result == [{"id": "rev1"}, {"id": "rev2"}]

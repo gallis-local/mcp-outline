@@ -165,8 +165,10 @@ class TestDocumentRevisionTools:
         mock_client.get_document_revision.assert_called_once_with("rev123")
     
     @patch('mcp_outline.features.documents.document_revisions.get_outline_client')
-    def test_get_document_revision_client_error(self, mock_get_client):
+    @patch('mcp_outline.features.documents.document_revisions._get_cached_revision')
+    def test_get_document_revision_client_error(self, mock_get_cached, mock_get_client):
         """Test revision retrieval with client error."""
+        mock_get_cached.return_value = None  # No cache
         mock_get_client.side_effect = OutlineClientError("API Error")
         
         tool = self.mock_mcp.tools['get_document_revision']
@@ -175,8 +177,10 @@ class TestDocumentRevisionTools:
         assert "Error retrieving revision: API Error" in result
     
     @patch('mcp_outline.features.documents.document_revisions.get_outline_client')
-    def test_get_document_revision_unexpected_error(self, mock_get_client):
+    @patch('mcp_outline.features.documents.document_revisions._get_cached_revision')
+    def test_get_document_revision_unexpected_error(self, mock_get_cached, mock_get_client):
         """Test revision retrieval with unexpected error."""
+        mock_get_cached.return_value = None  # No cache
         mock_get_client.side_effect = Exception("Unexpected error")
         
         tool = self.mock_mcp.tools['get_document_revision']
@@ -192,12 +196,13 @@ class TestDocumentRevisionTools:
         mock_get_client.return_value = mock_client
         
         tool = self.mock_mcp.tools['list_document_revisions']
-        result = tool("doc123", 25)
+        result = tool("doc123", 25, 0)
         
         assert "# Document Revisions (2 found)" in result
         assert "rev123" in result
         assert "rev122" in result
-        mock_client.list_document_revisions.assert_called_once_with("doc123", 25)
+        assert "Showing 2 revisions" in result
+        mock_client.list_document_revisions.assert_called_once_with("doc123", 25, 0)
     
     @patch('mcp_outline.features.documents.document_revisions.get_outline_client')
     def test_list_document_revisions_empty(self, mock_get_client):
@@ -222,26 +227,33 @@ class TestDocumentRevisionTools:
         assert "Error retrieving revisions: API Error" in result
     
     @patch('mcp_outline.features.documents.document_revisions.get_outline_client')
-    def test_compare_document_revisions_success(self, mock_get_client):
+    @patch('mcp_outline.features.documents.document_revisions._get_cached_revision')
+    def test_compare_document_revisions_success(self, mock_get_cached, mock_get_client):
         """Test successful revision comparison."""
+        mock_get_cached.side_effect = [None, None]  # No cache for both calls
         mock_client = MagicMock()
         revision_1 = {**SAMPLE_REVISIONS[0], "text": "First version content"}
-        revision_2 = {**SAMPLE_REVISIONS[1], "text": "Second version content"}
+        revision_2 = {**SAMPLE_REVISIONS[1], "text": "Second version content with more text"}
         mock_client.get_document_revision.side_effect = [revision_1, revision_2]
         mock_get_client.return_value = mock_client
         
         tool = self.mock_mcp.tools['compare_document_revisions']
         result = tool("rev123", "rev122")
         
-        assert "# Revision Comparison" in result
+        assert "# Detailed Revision Comparison" in result
         assert "Revision 1 (rev123)" in result
         assert "Revision 2 (rev122)" in result
-        assert "Content Comparison" in result
-        assert "characters" in result
+        assert "Content Analysis" in result
+        assert "Changes Summary" in result
+        assert "chars" in result
+        assert "words" in result
+        assert "lines" in result
     
     @patch('mcp_outline.features.documents.document_revisions.get_outline_client')
-    def test_compare_document_revisions_missing_revision(self, mock_get_client):
+    @patch('mcp_outline.features.documents.document_revisions._get_cached_revision')
+    def test_compare_document_revisions_missing_revision(self, mock_get_cached, mock_get_client):
         """Test revision comparison with missing revision."""
+        mock_get_cached.side_effect = [None, None]  # No cache for both calls
         mock_client = MagicMock()
         mock_client.get_document_revision.side_effect = [SAMPLE_REVISIONS[0], None]
         mock_get_client.return_value = mock_client

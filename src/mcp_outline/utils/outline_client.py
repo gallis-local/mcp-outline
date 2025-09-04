@@ -394,22 +394,30 @@ class OutlineClient:
     def list_document_revisions(
         self, 
         document_id: str, 
-        limit: int = 25
+        limit: int = 25,
+        offset: int = 0
     ) -> List[Dict[str, Any]]:
         """
-        List all revisions for a document.
+        List all revisions for a document with pagination support.
         
         Args:
             document_id: The document ID to get revisions for.
             limit: Maximum number of results to return
+            offset: Number of results to skip (for pagination)
             
         Returns:
             List of document revisions
         """
-        response = self.post("revisions.list", {
+        data = {
             "documentId": document_id, 
             "limit": limit
-        })
+        }
+        
+        # Add offset for pagination if provided
+        if offset > 0:
+            data["offset"] = offset
+            
+        response = self.post("revisions.list", data)
         return response.get("data", [])
     
     # Draft and activity tracking methods
