@@ -1,0 +1,64 @@
+name: Version Validation
+
+on:
+  push:
+    branches: [ main, rc ]
+    paths:
+      - pyproject.toml
+  pull_request:
+    branches: [ main, rc ]
+    paths:
+      - pyproject.toml
+
+permissions:
+  contents: read
+
+jobs:
+  validate-version:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: |
+        npm install
+        sudo apt-get update
+        sudo apt-get install -y jq
+
+    - name: Validate semantic versioning
+      run: |
+        chmod +x scripts/validate-version.sh
+        scripts/validate-version.sh
+
+    - name: Check for manual version bumps
+      if: github.event_name == 'pull_request'
+      run: |
+        # Get the base branch version
+        git checkout ${{ github.base_ref }}
+        BASE_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+        
+        # Get the current branch version
+        git checkout ${{ github.head_ref }}
+        HEAD_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+        
+        if [[ "$BASE_VERSION" != "$HEAD_VERSION" ]]; then
+          echo "❌ Manual version bump detected in PR!"
+          echo "Base version: $BASE_VERSION"
+          echo "Head version: $HEAD_VERSION"
+          echo ""
+          echo "Please use conventional commits instead of manual version bumps."
+          echo "Remove the version change and use:"
+          echo "  feat: description     → minor version bump"
+          echo "  fix: description      → patch version bump"
+          echo "  feat!: description    → major version bump"
+          exit 1
+        fi
+        
+        echo "✅ No manual version bumps detected"
