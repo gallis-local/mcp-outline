@@ -376,3 +376,113 @@ class OutlineClient:
             
         response = self.post("documents.answerQuestion", data)
         return response
+    
+    # Document revision methods
+    def get_document_revision(self, revision_id: str) -> Dict[str, Any]:
+        """
+        Get a specific document revision by ID.
+        
+        Args:
+            revision_id: The revision ID to retrieve.
+            
+        Returns:
+            The revision data.
+        """
+        response = self.post("revisions.info", {"id": revision_id})
+        return response.get("data", {})
+    
+    def list_document_revisions(
+        self, 
+        document_id: str, 
+        limit: int = 25,
+        offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """
+        List all revisions for a document with pagination support.
+        
+        Args:
+            document_id: The document ID to get revisions for.
+            limit: Maximum number of results to return
+            offset: Number of results to skip (for pagination)
+            
+        Returns:
+            List of document revisions
+        """
+        data = {
+            "documentId": document_id, 
+            "limit": limit
+        }
+        
+        # Add offset for pagination if provided
+        if offset > 0:
+            data["offset"] = offset
+            
+        response = self.post("revisions.list", data)
+        return response.get("data", [])
+    
+    # Draft and activity tracking methods
+    def list_draft_documents(self, limit: int = 25) -> List[Dict[str, Any]]:
+        """
+        List draft documents for the current user.
+        
+        Args:
+            limit: Maximum number of results to return
+            
+        Returns:
+            List of draft documents
+        """
+        response = self.post("documents.drafts", {"limit": limit})
+        return response.get("data", [])
+    
+    def get_recently_viewed_documents(
+        self, 
+        limit: int = 25
+    ) -> List[Dict[str, Any]]:
+        """
+        Get recently viewed documents for the current user.
+        
+        Args:
+            limit: Maximum number of results to return
+            
+        Returns:
+            List of recently viewed documents
+        """
+        response = self.post("documents.viewed", {"limit": limit})
+        return response.get("data", [])
+    
+    # Document import methods  
+    def import_document(
+        self, 
+        title: str,
+        text: str,
+        collection_id: Optional[str] = None,
+        parent_document_id: Optional[str] = None,
+        format: str = "markdown"
+    ) -> Dict[str, Any]:
+        """
+        Import a document from external content.
+        
+        Args:
+            title: The title for the imported document
+            text: The content to import
+            collection_id: Optional collection to import into
+            parent_document_id: Optional parent document ID
+            format: Import format (markdown, text, html)
+            
+        Returns:
+            The imported document data
+        """
+        data: Dict[str, Any] = {
+            "title": title,
+            "text": text,
+            "format": format
+        }
+        
+        if collection_id:
+            data["collectionId"] = collection_id
+            
+        if parent_document_id:
+            data["parentDocumentId"] = parent_document_id
+            
+        response = self.post("documents.import", data)
+        return response.get("data", {})

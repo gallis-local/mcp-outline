@@ -6,7 +6,7 @@ on:
 
 jobs:
   commitlint:
-    runs-on: ubuntu-latest
+    runs-on: gallis-gh-runner
     permissions:
       contents: read
     steps:

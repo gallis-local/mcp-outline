@@ -43,6 +43,9 @@ package-dir = {"" = "src"}
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
+markers = [
+    "performance: marks tests as performance tests (deselect with '-m \"not performance\"')"
+]
 
 [tool.ruff]
 line-length = 79
