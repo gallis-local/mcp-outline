@@ -4,7 +4,6 @@
 			"id": "CONTEXT7_API_KEY",
 			"type": "promptString",
 			"description": "Context7 API Key",
-			"default": "",
 			"password": true
 		}
 	],
