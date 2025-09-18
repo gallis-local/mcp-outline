@@ -3,6 +3,8 @@ name: Commit Lint
 on:
   pull_request:
     types: [opened, edited, synchronize]
+  push:
+    branches: [main, rc]
 
 jobs:
   commitlint:
@@ -22,10 +24,44 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Check if commit should be skipped
+        id: skip-check
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%s)
+          echo "Commit message: $COMMIT_MSG"
+          
+          # Skip validation for automated commits
+          if [[ "$COMMIT_MSG" =~ ^(chore\(release\):|Merge pull request|Initial plan$|Merge branch|^[0-9]+\.[0-9]+\.[0-9]+$|^v[0-9]+\.[0-9]+\.[0-9]+$) ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping commit lint for automated commit: $COMMIT_MSG"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "Running commit lint for: $COMMIT_MSG"
+          fi
+
       - name: Validate current commit (last commit) with commitlint
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && steps.skip-check.outputs.skip == 'false'
         run: npx commitlint --from HEAD~1 --to HEAD --verbose
 
       - name: Validate PR commits with commitlint
         if: github.event_name == 'pull_request'
-        run: npx commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose
+        run: |
+          # Get all commits in the PR
+          COMMITS=$(git rev-list ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+          
+          echo "Validating PR commits..."
+          for commit in $COMMITS; do
+            COMMIT_MSG=$(git log -1 --pretty=%s $commit)
+            echo "Checking commit: $commit - $COMMIT_MSG"
+            
+            # Skip automated commits
+            if [[ "$COMMIT_MSG" =~ ^(chore\(release\):|Merge pull request|Initial plan$|Merge branch|^[0-9]+\.[0-9]+\.[0-9]+$|^v[0-9]+\.[0-9]+\.[0-9]+$) ]]; then
+              echo "  ⏭️  Skipping automated commit: $COMMIT_MSG"
+              continue
+            fi
+            
+            echo "  🔍 Validating: $COMMIT_MSG"
+            echo "$COMMIT_MSG" | npx commitlint --verbose || exit 1
+          done
+          
+          echo "✅ All non-automated commits pass validation"

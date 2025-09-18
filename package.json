@@ -1,6 +1,12 @@
 {
   "name": "mcp-outline",
   "private": true,
+  "scripts": {
+    "commitlint": "commitlint --edit",
+    "commitlint:check": "commitlint --from HEAD~1 --to HEAD --verbose",
+    "release": "semantic-release",
+    "release:dry": "semantic-release --dry-run"
+  },
   "devDependencies": {
     "@commitlint/cli": "^18.0.0",
     "@commitlint/config-conventional": "^18.0.0",
