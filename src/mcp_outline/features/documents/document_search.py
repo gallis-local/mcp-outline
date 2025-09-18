@@ -107,6 +107,41 @@ def register_tools(mcp) -> None:
         mcp: The FastMCP server instance
     """
     @mcp.tool()
+    def test_auth_context() -> str:
+        """
+        Test tool to verify HTTP header authentication is working.
+        
+        When called via HTTP transport, this tool will attempt to extract
+        the Outline API key from HTTP headers and verify authentication.
+        
+        Returns:
+            Authentication status and method used
+        """
+        try:
+            # Get current context
+            context = mcp.get_context()
+            
+            # Try to create client with context (HTTP header auth)
+            from mcp_outline.features.documents.common import get_outline_client_from_context
+            client = get_outline_client_from_context(context)
+            
+            # Test the connection
+            auth_info = client.auth_info()
+            
+            # Check what method was used
+            api_key_source = "environment variable"
+            if hasattr(context, 'request') and context.request is not None:
+                headers = context.request.headers
+                if headers.get('authorization', '').startswith('Bearer ') or \
+                   headers.get('x-outline-api-key') or headers.get('outline-api-key'):
+                    api_key_source = "HTTP header"
+            
+            return f"✅ Authentication successful! API key from: {api_key_source}. User: {auth_info.get('user', {}).get('name', 'Unknown')}"
+            
+        except Exception as e:
+            return f"❌ Authentication failed: {str(e)}"
+
+    @mcp.tool()
     def search_documents(
         query: str, 
         collection_id: Optional[str] = None

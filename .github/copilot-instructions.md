@@ -4,9 +4,9 @@ Use this as a quick-start guide to contribute productively with minimal context 
 
 ## Big picture
 - MCP server that exposes Outline (getoutline.com) features as MCP tools.
-- Transports: `MCP_TRANSPORT=stdio` (default) or `sse` (HTTP/SSE on port 3001).
+- Transports: `MCP_TRANSPORT=stdio` (default), `sse` (HTTP/SSE on port 3001), or `http` (HTTP on configurable port).
 - Flow: `server.py` creates `FastMCP` → registers tools under `features/documents` → tools call Outline via `OutlineClient`.
-- Architecture: Modular feature system where each module in `features/documents/` handles a specific domain (search, revisions, collaboration, etc.).
+- Architecture: Modular feature system where each module in `features/documents/` handles a specific domain (search, revisions, collaboration, etc.). Currently implements 30+ tools covering 56% of Outline API.
 - **Commits**: ALWAYS USE conventional commits for semantic versioning. Examples: `feat: add new tool`, `fix: resolve client error`, `feat!: breaking change`.
 
 ## Key files
@@ -24,6 +24,7 @@ Use this as a quick-start guide to contribute productively with minimal context 
 - Keep tools small; delegate formatting to `_format_*` helpers; delegate HTTP to `OutlineClient`.
 - **Formatting helpers**: Use consistent `_format_*` functions (e.g., `_format_search_results`, `_format_documents_list`) for readable output.
 - **Module structure**: Each feature module exports `register_tools(mcp)` and contains `@mcp.tool()` decorated functions.
+- **Caching patterns**: Simple in-memory caching with expiry (see `document_revisions.py` for `_revision_cache` pattern).
 - Style: PEP8-ish, 79-char lines, type hints, import order stdlib → third-party → local.
 - Avoid noisy stdout/stderr in tools (server startup logs are fine).
 
@@ -31,6 +32,7 @@ Use this as a quick-start guide to contribute productively with minimal context 
 - Install dev deps: `uv pip install -e ".[dev]"`
 - Run server (stdio): `mcp dev src/mcp_outline/server.py` or `./start_server.sh` (loads `.env`).
 - Run server (sse): `export MCP_TRANSPORT=sse; mcp-outline` → HTTP on `:3001` (`/sse`, `/messages/`).
+- Run server (http): `export MCP_TRANSPORT=http; mcp-outline` → HTTP on `:8000` (configurable via `HTTP_HOST`, `HTTP_PORT`).
 - Docker: `sudo docker buildx build -t mcp-outline .` then use MCP Inspector with the built image.
 - Tests: `uv sync --extra dev; uv run pytest -q`. Use `MockMCP` class pattern in tests.
 - Smoke test: `uv run python test_mcp.py` (spawns stdio server and lists tools).
@@ -38,17 +40,20 @@ Use this as a quick-start guide to contribute productively with minimal context 
 
 ## Extending
 - **New tool in existing module**:
-  1) Add `@mcp.tool()` function → get client via `get_outline_client()` → call `client.post(...)` or specific method.
+  1) Add `@mcp.tool()` function → get client via `get_outline_client()` or `get_outline_client_from_context(mcp.get_context())` for HTTP header auth.
   2) Format with a `_format_*` helper and return a concise string.
   3) Handle errors: `except OutlineClientError as e: return f"Error: {e}"` then `except Exception as e: return f"Unexpected error: {e}"`
 - **New module**:
   1) Create `src/mcp_outline/features/documents/my_feature.py` with `register_tools(mcp)`.
   2) Import and call it from `features/documents/__init__.py::register`.
+- **HTTP auth pattern**: Use `get_outline_client_from_context(mcp.get_context())` to support API keys from HTTP headers.
 - **Feature domains**: search, reading, content, organization, lifecycle, collaboration, revisions, import, collections, AI tools.
 
 ## Integration assumptions
 - `OUTLINE_API_KEY` is required. `OUTLINE_API_URL` defaults to `https://app.getoutline.com/api` (override for self-hosted).
-- Use `stdio` for local CLI; `sse` for container/HTTP scenarios.
+- Use `stdio` for local CLI; `sse` for container/HTTP scenarios; `http` for web service deployments.
+- **HTTP transport**: Maps to `streamable-http` transport, runs on port 3001 by default.
+- **HTTP authentication**: Supports API key via headers (`Authorization: Bearer <token>`, `X-Outline-API-Key: <token>`, or `Outline-API-Key: <token>`).
 - **Docker considerations**: Multi-stage build with uv for deps, non-root user (appuser:appgroup), Python slim.
 
 ## Gotchas
@@ -57,3 +62,4 @@ Use this as a quick-start guide to contribute productively with minimal context 
 - **Transport validation**: Server validates `MCP_TRANSPORT` env var, falls back to `stdio` if invalid.
 - **Testing**: Use `MockMCP` class pattern in tests; test formatting helpers separately from integration.
 - **Caching**: Document revisions use simple caching patterns - see `document_revisions.py`.
+- **Version sync**: Uses semantic-release for automated versioning; update `docs/IMPLEMENTATION_STATUS.md` when adding features.
