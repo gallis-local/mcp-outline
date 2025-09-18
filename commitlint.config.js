@@ -43,9 +43,9 @@ module.exports = {
       ]
     ],
     'subject-case': [2, 'never', ['start-case', 'pascal-case', 'upper-case']],
-    'subject-max-length': [2, 'always', 72],
-    'body-max-line-length': [2, 'always', 100],
-    'header-max-length': [2, 'always', 72],
+    'subject-max-length': [2, 'always', 100],
+    'body-max-line-length': [2, 'always', 200],
+    'header-max-length': [2, 'always', 100],
     'type-case': [2, 'always', 'lower-case'],
     'type-empty': [2, 'never'],
     'scope-case': [2, 'always', 'lower-case'],
