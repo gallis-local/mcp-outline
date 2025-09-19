@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # Test MCP Outline server with HTTP transport
+  mcp-outline-http:
+    build:
+      context: ../..  # Build from repository root
+      dockerfile: Dockerfile
+    environment:
+      - MCP_TRANSPORT=streamable-http
+      - OUTLINE_API_KEY=test-compose-key
+      - OUTLINE_API_URL=https://mock-outline.test/api
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/" || "exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - mcp-test
+
+  # Test MCP Outline server with SSE transport
+  mcp-outline-sse:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    environment:
+      - MCP_TRANSPORT=sse
+      - OUTLINE_API_KEY=test-compose-sse-key
+    ports:
+      - "3002:3001"
+    networks:
+      - mcp-test
+
+  # Test HTTP compatibility mapping (http -> streamable-http)
+  mcp-outline-http-compat:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    environment:
+      - MCP_TRANSPORT=http  # Should map to streamable-http
+      - OUTLINE_API_KEY=test-compose-compat-key
+    ports:
+      - "3003:3001"
+    networks:
+      - mcp-test
+
+  # Test client service for integration testing
+  test-client:
+    image: curlimages/curl:latest
+    depends_on:
+      - mcp-outline-http
+      - mcp-outline-sse
+      - mcp-outline-http-compat
+    networks:
+      - mcp-test
+    command: |
+      sh -c "
+        echo 'Testing HTTP transport...'
+        curl -f http://mcp-outline-http:3001/ || echo 'HTTP test failed'
+        
+        echo 'Testing SSE transport...'
+        curl -f http://mcp-outline-sse:3001/ || echo 'SSE test failed'
+        
+        echo 'Testing HTTP compatibility...'
+        curl -f http://mcp-outline-http-compat:3001/ || echo 'HTTP compat test failed'
+        
+        echo 'All tests completed'
+      "
+
+networks:
+  mcp-test:
+    driver: bridge

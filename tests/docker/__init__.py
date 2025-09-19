@@ -1,0 +1,1 @@
+"""Docker and container tests for MCP Outline server."""
